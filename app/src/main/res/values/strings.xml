@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">TrackingApp</string>
+    <string name="track_me">Track Me</string>
+    <string name="start_tracking">Start Tracking</string>
+    <string name="stop_tracking">STOP TRACKING</string>
+    <string name="seperator">^^^^</string>
+</resources>
