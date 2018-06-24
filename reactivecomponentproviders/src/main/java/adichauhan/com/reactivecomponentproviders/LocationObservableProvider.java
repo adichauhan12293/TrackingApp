@@ -32,7 +32,7 @@ public class LocationObservableProvider {
             @Override
             public void subscribe(final ObservableEmitter<Optional<Location>> emitter) {
                 final LocationRequest locationRequest = new LocationRequest();
-                locationRequest.setSmallestDisplacement(10);
+                //locationRequest.setSmallestDisplacement(10);
                 locationRequest.setInterval(30000);
                 locationRequest.setFastestInterval(0);
                 locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);

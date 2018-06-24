@@ -116,7 +116,6 @@ public class TrackLocationServicePresenter {
                         if(!locationOptional.isPresent())
                             return;
                         final Location location = locationOptional.get();
-                        Log.d("adasdasd",""+locationOptional.get().getProvider());
                         updateUI();
                         model.getAddressByLatLng(location.getLatitude(),location.getLongitude())
                                 .subscribeOn(Schedulers.io())
@@ -124,7 +123,6 @@ public class TrackLocationServicePresenter {
                                 .subscribe(new DisposableObserver<List<Address>>() {
                                     @Override
                                     public void onNext(List<Address> addresses) {
-                                        Log.d("adasdasdasda",""+addresses.size());
                                         TrackingLocationEntity trackingLocationEntity = new TrackingLocationEntity();
                                         if(addresses.size()>0) {
                                             trackingLocationEntity.setName(addresses.get(0).getFeatureName());
