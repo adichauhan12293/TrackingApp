@@ -10,7 +10,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.BatteryManager;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import org.joda.time.DateTime;
 
@@ -116,10 +115,7 @@ public class TrackLocationServicePresenter {
                         if(!locationOptional.isPresent())
                             return;
                         final Location location = locationOptional.get();
-                        updateUI();
                         model.getAddressByLatLng(location.getLatitude(),location.getLongitude())
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(new DisposableObserver<List<Address>>() {
                                     @Override
                                     public void onNext(List<Address> addresses) {
@@ -145,10 +141,14 @@ public class TrackLocationServicePresenter {
                                         trackingLocationEntity.setChargingStatus(currentBatteryStatus.getChargingStatus());
                                         trackingLocationEntity.setCharge(currentBatteryStatus.getCharge());
                                         trackingLocationEntity.setBatteryStatusTimestamp(currentBatteryStatus.getTimestamp());
-                                        model.insertTrackingLocationEntity(trackingLocationEntity)
-                                                .subscribeOn(Schedulers.io())
-                                                .observeOn(AndroidSchedulers.mainThread()).subscribe();
-                                        uploadLocationData();
+                                        compositeDisposable.add(model.insertTrackingLocationEntity(trackingLocationEntity)
+                                                .subscribe(new Consumer<Boolean>() {
+                                            @Override
+                                            public void accept(Boolean aBoolean) {
+                                                updateUI();
+                                                uploadLocationData();
+                                            }
+                                        }));
                                     }
 
                                     @Override
@@ -180,8 +180,6 @@ public class TrackLocationServicePresenter {
                 && !uploadLocationDataDisposable.isDisposed())
             uploadLocationDataDisposable.dispose();
         uploadLocationDataDisposable = model.getUnSyncedEntities()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<List<TrackingLocationEntity>>() {
                     @Override
                     public void accept(List<TrackingLocationEntity> trackingLocationEntities) {
@@ -189,17 +187,19 @@ public class TrackLocationServicePresenter {
                                 && !trackingLocationEntities.isEmpty()) {
                             for(final TrackingLocationEntity trackingLocationEntity : trackingLocationEntities) {
                                 model.updateUserLocation(getUpdateUserLocationRequest(trackingLocationEntity))
-                                        .subscribeOn(Schedulers.io())
-                                        .observeOn(AndroidSchedulers.mainThread())
                                         .subscribe(new DisposableObserver<Response<Void>>() {
                                             @Override
                                             public void onNext(Response<Void> response) {
                                                 if (response.isSuccessful()) {
                                                     trackingLocationEntity.setIsSynced(1);
-                                                    model.insertTrackingLocationEntity(trackingLocationEntity)
-                                                            .subscribeOn(Schedulers.io())
-                                                            .subscribe();
-                                                    updateUI();
+                                                    compositeDisposable.add(model
+                                                            .insertTrackingLocationEntity(trackingLocationEntity)
+                                                            .subscribe(new Consumer<Boolean>() {
+                                                                @Override
+                                                                public void accept(Boolean aBoolean) {
+                                                                    updateUI();
+                                                                }
+                                                            }));
                                                 }
                                             }
 

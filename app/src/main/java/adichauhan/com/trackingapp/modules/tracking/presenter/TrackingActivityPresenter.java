@@ -52,6 +52,7 @@ public class TrackingActivityPresenter {
         return view.observeStartTrackingClick().subscribe(new Consumer<Object>() {
             @Override
             public void accept(Object o) {
+                model.deleteUserLocationTrackingData().subscribe();
                 if(PermissionUtils.checkPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
                     Intent intent = new Intent(activity,TrackLocationService.class);
                     activity.startService(intent);
@@ -68,9 +69,7 @@ public class TrackingActivityPresenter {
         return view.observeStopTrackingClick().subscribe(new Consumer<Object>() {
             @Override
             public void accept(Object o) {
-                model.deleteUserLocationTrackingData()
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread()).subscribe();
+                model.deleteUserLocationTrackingData().subscribe();
                 activity.stopService(new Intent(activity,TrackLocationService.class));
             }
         });
@@ -92,14 +91,13 @@ public class TrackingActivityPresenter {
                 .subscribe(new Consumer<Intent>() {
             @Override
             public void accept(Intent intent) {
-                Disposable disposable
-                        = model.getUserLocationTrackingData()
+                compositeDisposable.add(model.getUserLocationTrackingData()
                         .subscribe(new Consumer<List<TrackingLocationEntity>>() {
                     @Override
                     public void accept(List<TrackingLocationEntity> trackingLocationEntities) {
                         view.updateData(trackingLocationEntities);
                     }
-                });
+                }));
             }
         });
     }

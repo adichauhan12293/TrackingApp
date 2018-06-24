@@ -62,7 +62,9 @@ public class TrackingLocationServiceModel {
 
     public Maybe<List<TrackingLocationEntity>> getUnSyncedEntities() {
         return trackingDatabase.trackingLocationDAO().
-                getUnsyncedEntities();
+                getUnsyncedEntities()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io());
     }
 
     public Observable<Boolean> insertTrackingLocationEntity(final TrackingLocationEntity trackingLocationEntity) {
@@ -73,11 +75,14 @@ public class TrackingLocationServiceModel {
                         .insert(trackingLocationEntity);
                 emitter.onNext(true);
             }
-        });
+        }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     public Observable<List<Address>> getAddressByLatLng(Double lat, Double lng) {
         return LocationObservableProvider
-                .getLocationByPlaceIDObservable(lat,lng,geocoder);
+                .getLocationByPlaceIDObservable(lat,lng,geocoder)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io());
     }
 }

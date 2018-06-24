@@ -42,6 +42,7 @@ public class TrackingActivityModel {
                         .delete();
                 emitter.onNext(true);
             }
-        });
+        }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 }
